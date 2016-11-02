@@ -3,18 +3,19 @@ __email__ = "kiran_vemuri@adaranetworks.com"
 __status__ = "Development"
 __maintainer__ = "Kiran Vemuri"
 
-import paramiko
-from paramiko import py3compat
 from StringIO import StringIO
+import paramiko
 
-
+# Work around for py.test paramiko hanging issue. Refer https://github.com/paramiko/paramiko/issues/735
+from paramiko import py3compat
 py3compat.u("dirty hack")
 
-class SshX:
+
+class Connection:
     """
     A wrapper for paramiko.SSHClient
     """
-    #TIMEOUT = 4
+    # TIMEOUT = 4
 
     def __init__(self, host, port, username, password, key=None, passphrase=None):
         self.host = host
@@ -29,7 +30,6 @@ class SshX:
             key = paramiko.RSAKey.from_private_key(StringIO(key), password=passphrase)
         # self.client.connect(host, port, username=username, password=password, pkey=key, timeout=self.TIMEOUT)
         self.client.connect(self.host, self.port, username=username, password=password, pkey=key)
-
 
         # Sftp client
         # Open a transport
@@ -55,8 +55,8 @@ class SshX:
     def execute(self, command, sudo=False):
         """
         Method to execute a remote command
-        :param command(str): Command to be executed on the remote machine
-        :param sudo(bool): True to run the command as sudo and (default)False to run the command without sudo
+        :param command: <str> Command to be executed on the remote machine
+        :param sudo: <bool> True to run the command as sudo and (default)False to run the command without sudo
         :return Return value, stderr and stdout of the executed command as a dictionary
         """
         feed_password = False
@@ -74,8 +74,8 @@ class SshX:
     def upload(self, local_path, remote_path):
         """
         Method to support file upload(sftp put) using paramiko
-        :param local_path(str): local path of the file
-        :param remote_path(str): remote path of the file
+        :param local_path: <str> local path of the file
+        :param remote_path: <str> remote path of the file
         """
         # Upload using sftp.put
         self.sftp.put(local_path, remote_path)
@@ -83,8 +83,8 @@ class SshX:
     def download(self, remote_path, local_path):
         """
         Method to support file download(sftp get) using paramiko
-        :param remote_path(str): remote path of the file
-        :param local_path(str): local path of the file
+        :param remote_path: <str> remote path of the file
+        :param local_path: <str> local path of the file
         """
         # Download using sftp.get
-        self.sftp.get(remote_path,local_path)
+        self.sftp.get(remote_path, local_path)

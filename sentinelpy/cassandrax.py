@@ -7,7 +7,7 @@ from cassandra.cluster import Cluster
 from cassandra.query import dict_factory
 
 
-class CassandraX:
+class Cassandra:
     """
     Class to facilitate requests to the cassandra cluster
     """
@@ -20,7 +20,7 @@ class CassandraX:
     def new_session(self, keyspace=None):
         """
         Establishes a session to the cassandra cluster and Returns session object
-        :param keyspace(str): name of the keyspace you want to connect to
+        :param keyspace: <str> name of the keyspace you want to connect to
         :return session object
         """
         cluster = Cluster(self.seed_nodes)
@@ -38,12 +38,11 @@ class CassandraX:
 
     def run_query(self, in_query, keyspace=None):
         """
-        :param in_query(str): query to be executed on the cluster
-        :param keyspace(str): name of the keyspace to run the query on
+        :param in_query: <str> query to be executed on the cluster
+        :param keyspace: <str> name of the keyspace to run the query on
         :return a list of rows from the query results
         """
         cql_session = self.new_session(keyspace)
         cql_session.row_factory = dict_factory
         user_query = cql_session.execute(in_query)
         return [row for row in user_query]
-        

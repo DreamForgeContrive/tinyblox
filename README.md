@@ -7,5 +7,3 @@
 * OvsX - Facilitate OVS operations
 * OpenStackX - Facilitate OpenStack interactions.
 
-Roadmap:
-* AWSX - Facilitate AWS operations using CloudFabric API

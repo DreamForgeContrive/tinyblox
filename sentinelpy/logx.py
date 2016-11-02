@@ -6,7 +6,7 @@ __maintainer__ = "Kiran Vemuri"
 import logging
 
 
-class LogX:
+class Log:
     """
     Class to facilitate logging
     """
