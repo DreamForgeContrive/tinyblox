@@ -23,7 +23,7 @@ class Networking:
         self.request_headers = {"Content-type": "application/json",
                                 "X-Auth-Token": self.auth_token}
 
-    # Network
+    # Internal Network
 
     def list_networks(self):
         """
@@ -66,6 +66,23 @@ class Networking:
                                  data=request_data)
         return response
 
+    def update_network(self, network_uuid, network_name):
+        """
+        Update a network
+        :param network_uuid: <uuid> UUID of the network to be updated
+        :param network_name: <str> New name to be updated for the network
+        :return: response object returned by the update_network request
+        """
+        request_data = json.dumps({
+            "network": {
+                "name": network_name
+            }
+        })
+        response = requests.put(self.url + "/v2.0/networks/{}".format(network_uuid),
+                                headers=self.request_headers,
+                                data=request_data)
+        return response
+
     def delete_network(self, network_uuid):
         """
         Delete a network
@@ -75,6 +92,9 @@ class Networking:
         response = requests.delete(self.url + "/v2.0/networks/{}".format(network_uuid),
                                    headers=self.request_headers)
         return response
+
+    # External Network
+
 
     # Subnets
 

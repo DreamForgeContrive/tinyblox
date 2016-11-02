@@ -7,6 +7,9 @@ import requests
 
 
 class Image:
+    """
+    Interface to interact with OpenStack image service using v2 REST API
+    """
 
     def __init__(self, url, auth_token):
         self.url = url

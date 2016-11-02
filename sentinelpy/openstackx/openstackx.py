@@ -1,11 +1,12 @@
 __author__ = "Kiran Vemuri"
-__email__ = "kiran_vemuri@adaranetworks.com"
+__email__ = "kkvemuri@uh.edu"
 __status__ = "Development"
 __maintainer__ = "Kiran Vemuri"
 
 from identityx import Identity
 from computex import Compute
 from networkingx import Networking
+from imagex import Image
 
 
 class Openstack:
@@ -33,16 +34,9 @@ class Openstack:
         self.catalog = self.scoped_token.json()['token']['catalog']
         self.fetch_endpoint_urls()
 
-        self.Compute = None
-        self.Networking = None
-        self.enable_networking()
-        self.enable_compute()
-
-    def enable_networking(self):
-        self.Networking = Networking(self.networking_url, self.auth_token)
-
-    def enable_compute(self):
         self.Compute = Compute(self.compute_url, self.auth_token)
+        self.Networking = Networking(self.networking_url, self.auth_token)
+        self.Image = Image(self.image_url, self.auth_token)
 
     def fetch_endpoint_urls(self):
         for endpoint in self.catalog:
@@ -58,6 +52,10 @@ class Openstack:
                 for detail in endpoint['endpoints']:
                     if detail['interface'] == 'public':
                         self.networking_url = detail['url']
+            elif endpoint['name'] == 'glance':
+                for detail in endpoint['endpoints']:
+                    if detail['interface'] == 'public':
+                        self.image_url = detail['url']
 
 
 if __name__ == '__main__':
