@@ -1,25 +1,27 @@
 __author__ = "Kiran Vemuri"
-__email__ = "kiran_vemuri@adaranetworks.com"
+__email__ = "kkvemuri@uh.edu"
 __status__ = "Development"
-__maintainer__= "None"
+__maintainer__ = "None"
 
-from Sentinel import cassandrax
-from Sentinel import logx
+from sentinelpy import cassandrax
+from sentinelpy import logx
 import datetime
 import yaml
 
 with open('./config_vars.yaml', 'r') as stream:
     try:
         test_config = yaml.load(stream)
+        csx = cassandrax.Cassandra(test_config['Cassandra']['IP'])
+
+        lgx = logx.Log(test_config['Log']['path'])
+        lh = lgx.log_handler()
+        lh.info("\n ***** \n Starting test_cassandra execution \
+                 | {} \n ***** \n".format(datetime.datetime.now()))
     except yaml.YAMLError as exc:
         print exc
 
-csx = cassandrax.CassandraX(test_config['Cassandra']['IP'])
 
-lgx = logx.LogX(test_config['Log']['path'])
-lh = lgx.log_handler()
-lh.info("\n ***** \n Starting test_cassandra execution \
-         | {} \n ***** \n".format(datetime.datetime.now()))
+
 
 def test_cassandra_1():
     """
@@ -29,6 +31,7 @@ def test_cassandra_1():
     keyspace_list = csx.fetch_keyspaces()
     lh.info("Retrieved keyspace list {}".format(keyspace_list))
     assert 'system' in keyspace_list
+
 
 def test_cassandra_2():
     """

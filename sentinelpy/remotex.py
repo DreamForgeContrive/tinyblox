@@ -1,5 +1,5 @@
 __author__ = "Kiran Vemuri"
-__email__ = "kiran_vemuri@adaranetworks.com"
+__email__ = "kkvemuri@uh.edu"
 __status__ = "Development"
 __maintainer__ = "Kiran Vemuri"
 
