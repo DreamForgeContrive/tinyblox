@@ -1,5 +1,5 @@
 __author__ = "Kiran Vemuri"
-__email__ = "kiran_vemuri@adaranetworks.com"
+__email__ = "kkvemuri@uh.edu"
 __status__ = "Development"
 __maintainer__ = "Kiran Vemuri"
 
@@ -40,8 +40,20 @@ class Compute:
     def create_multiple_servers(self):
         pass
 
-    def delete_server(self):
-        pass
+    def show_server(self, server_uuid):
+        response = requests.get(self.url + "/servers/{}".format(server_uuid),
+                                headers=self.request_headers)
+        return response
+
+    def delete_server(self, server_uuid):
+        """
+        Delete a server
+        :param server_uuid: <uuid> UUID of the server
+        :return:
+        """
+        response = requests.delete(self.url + "/servers/{}".format(server_uuid),
+                                   headers=self.request_headers)
+        return response
 
     def reboot_server(self):
         pass
