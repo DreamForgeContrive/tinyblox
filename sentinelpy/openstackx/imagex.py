@@ -12,6 +12,11 @@ class Image:
     """
 
     def __init__(self, url, auth_token):
+        """
+
+        :param url: <str> URL to reach image service
+        :param auth_token: <str> auth_token to authorize the request
+        """
         self.url = url
         self.auth_token = auth_token
         self.request_headers = {"Content-type": "application/json",

@@ -56,38 +56,3 @@ class Openstack:
                 for detail in endpoint['endpoints']:
                     if detail['interface'] == 'public':
                         self.image_url = detail['url']
-
-
-if __name__ == '__main__':
-    osx = Openstack('10.10.86.3', 'admin', 'password')
-    # print osx.Compute.list_servers()
-    # print "====\n===="
-    # print osx.Compute.list_flavors()
-    # print "====\n===="
-    # print osx.Compute.list_images()
-    # print "====\n===="
-    # print osx.Compute.list_keypairs()
-    # print "====\n===="
-    # print osx.Compute.list_secutity_groups()
-    # print "====\n===="
-    print osx.Networking.list_networks().json()
-    # print "====\n===="
-    # print osx.Networking.list_subnets()
-    # print "====\n===="
-    # print osx.Networking.list_ports()
-    # print "====\n===="
-    # print osx.Networking.list_routers()
-
-    print "====\n===="
-    new_net = osx.Networking.create_network('test_net')
-    print new_net.json()
-    print osx.Networking.show_network(new_net.json()['network']['id']).json()
-    new_sub = osx.Networking.create_subnet(new_net.json()['network']['id'], cidr="2.2.2.0/24")
-    print new_sub
-    print new_sub.json()
-    print osx.Networking.delete_subnet(new_sub.json()['subnet']['id'])
-    print osx.Networking.delete_network(new_net.json()['network']['id'])
-    print osx.Networking.create_router('test_router').json()
-
-
-
