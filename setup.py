@@ -9,4 +9,5 @@ setup(name='sentinelpy',
       url='https://github.com/DreamForgeContrive/sentinelpy',
       download_url='https://github.com/DreamForgeContrive/sentinelpy/tarball/0.1',
       keywords=['automation', 'ssh', 'sftp', 'openstack', 'logging', 'cassandra'],
+      install_reqires=['cassandra-driver', 'paramiko==1.17.0', 'pyyaml', 'requests'],
       classifiers=[],)
