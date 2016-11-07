@@ -1,4 +1,4 @@
-# Sentinel - Python Automation Framework
+# sentinelpy - Python Automation Framework
 
 ## Modules:
 * cassandrax - Facilitate cassandra interactions to a cassandra cluster
@@ -11,3 +11,13 @@
     * imagex
     * networkingx
 
+
+
+## Installation:
+
+Please install the following dependencies:
+`pip install cassandra-driver paramiko requests pyyaml`
+
+
+To install sentinelpy:
+`pip install sentinelpy`
