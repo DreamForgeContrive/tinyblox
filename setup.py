@@ -1,5 +1,13 @@
 from setuptools import setup
 
+requires = [
+    'cassandra-driver',
+    'paramiko==1.17.0',
+    'requests',
+    'pyyaml'
+]
+
+
 setup(name='sentinelpy',
       packages=['sentinelpy'],
       version='0.1.4',
@@ -10,9 +18,6 @@ setup(name='sentinelpy',
       download_url='https://github.com/DreamForgeContrive/sentinelpy/tarball/0.1.4',
       keywords=['automation', 'ssh', 'sftp', 'openstack', 'logging', 'cassandra'],
       license='MIT',
-      install_reqires=[
-          'cassandra-driver',
-          'paramiko==1.17.0',
-          'requests',
-          'pyyaml'],
+      install_reqires=requires,
+      setup_requires=requires,
       classifiers=[],)
