@@ -95,7 +95,6 @@ class Networking:
 
     # External Network
 
-
     # Subnets
 
     def list_subnets(self):
@@ -158,17 +157,29 @@ class Networking:
                                 headers=self.request_headers)
         return response
 
-    def show_port(self):
-        pass
-        # TODO
+    def show_port(self, port_uuid):
+        """
+        Show port details
+        :param port_uuid: <uuid> UUID of the port
+        :return: response object returned by the show_port request
+        """
+        response = requests.get(self.url + "/v2.0/ports/{}".format(port_uuid),
+                                headers=self.request_headers)
+        return response
 
     def create_port(self):
         pass
         # TODO
 
-    def delete_port(self):
-        pass
-        # TODO
+    def delete_port(self, port_uuid):
+        """
+        Delete a port
+        :param port_uuid: <uuid> UUID of the port that is to be deleted
+        :return: response object returned by the delete_port request
+        """
+        response = requests.delete(self.url + "/v2.0/ports/{}".format(port_uuid),
+                                   headers=self.request_headers)
+        return response
 
     # Routers
 
