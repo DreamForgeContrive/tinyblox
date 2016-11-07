@@ -16,7 +16,7 @@
 ## Installation:
 
 Please install the following dependencies:
-`pip install cassandra-driver paramiko requests pyyaml`
+`pip install cassandra-driver paramiko==1.17.0 requests pyyaml`
 
 
 To install sentinelpy:
