@@ -157,7 +157,7 @@ def test_update_network():
     if net_create.status_code == 201:
         rand_name = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(10))
         net_update = osx.Networking.update_network(net_create.json()['network']['id'], rand_name)
-        logger.info("Random name : {} Network details : {}".format(rand_name,net_update.json()))
+        logger.info("Random name : {} Network details : {}".format(rand_name, net_update.json()))
         osx.Networking.delete_network(net_create.json()['network']['id'])
         assert net_update.status_code == 200 and net_update.json()['network']['name'] == rand_name
     else:
