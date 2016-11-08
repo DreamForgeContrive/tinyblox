@@ -23,6 +23,6 @@ setup(name='sentinelpy',
       download_url='https://github.com/DreamForgeContrive/sentinelpy/tarball/0.1.6',
       keywords=['automation', 'ssh', 'sftp', 'openstack', 'logging', 'cassandra'],
       license='MIT',
-      install_reqires=requires,
+      install_requires=requires,
       setup_requires=requires,
       classifiers=[],)

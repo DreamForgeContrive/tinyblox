@@ -47,6 +47,6 @@ class Image:
         return response
 
     def reactivate_image(self, image_uuid):
-        response = requests.post(self.url + "/v2/images{}/actions/reactivate".format(image_uuid),
+        response = requests.post(self.url + "/v2/images/{}/actions/reactivate".format(image_uuid),
                                  headers=self.request_headers)
         return response
