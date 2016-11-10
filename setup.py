@@ -10,17 +10,16 @@ requires = [
 
 packages = [
     'sentinelpy',
-    'sentinelpy.openstackx',
 ]
 
 setup(name='sentinelpy',
       packages=packages,
-      version='0.1.7',
+      version='0.1.8',
       description='Python Automation Framework',
       author='Kiran Vemuri',
       author_email='kkvemuri@uh.edu',
       url='https://github.com/DreamForgeContrive/sentinelpy',
-      download_url='https://github.com/DreamForgeContrive/sentinelpy/tarball/0.1.7',
+      download_url='https://github.com/DreamForgeContrive/sentinelpy/tarball/0.1.8',
       keywords=['automation', 'ssh', 'sftp', 'openstack', 'logging', 'cassandra'],
       license='MIT',
       install_requires=requires,
