@@ -1,12 +1,22 @@
-from sentinelpy.openstackx import openstackx
+from sentinelpy.openstackx import OSSession
 from sentinelpy.logx import Log
 import pytest
 import random
 import string
 
-osx = openstackx.Openstack('10.11.86.3', 'admin', 'password')
+osx = OSSession('10.11.86.3', 'admin', 'password')
 logging = Log('./unit_test.log')
 logger = logging.log_handler()
+
+
+def random_string(str_len):
+    """
+    Generate a random string of the given length
+    :param str_len: <int> length of the string to be generated
+    :return: <str> random string of given length
+    """
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(str_len))
+
 
 # Unit Tests
 
@@ -91,13 +101,15 @@ def test_reactivate_image():
 
 # Networking
 
+# Overlay Networks
+
 def test_create_network():
     """
     Create a network and validate [admin_state=True, shared=False, external=False]
     """
     logger.info("***starting test_create_network***")
 
-    net_name = "TestNetwork0"
+    net_name = random_string(10)
     net_create = osx.Networking.create_network(net_name, admin_state=True, shared=False, external=False)
     logger.info("New network : {}".format(net_create.json()))
     net_delete = osx.Networking.delete_network(net_create.json()['network']['id'])
@@ -110,7 +122,7 @@ def test_create_network_shared():
     """
     logger.info("***starting test_create_network_shared***")
 
-    net_name = "TestNetwork1"
+    net_name = random_string(10)
     net_create = osx.Networking.create_network(net_name, admin_state=True, shared=True, external=False)
     logger.info("New network : {}".format(net_create.json()))
     net_delete = osx.Networking.delete_network(net_create.json()['network']['id'])
@@ -150,12 +162,12 @@ def test_update_network():
     """
     logger.info("***starting test_update_network***")
 
-    net_name = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(10))
+    net_name = random_string(10)
     net_create = osx.Networking.create_network(net_name, admin_state=True, shared=False, external=False)
     logger.info("Net network : {}".format(net_create.json()))
 
     if net_create.status_code == 201:
-        rand_name = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(10))
+        rand_name = random_string(10)
         net_update = osx.Networking.update_network(net_create.json()['network']['id'], rand_name)
         logger.info("Random name : {} Network details : {}".format(rand_name, net_update.json()))
         osx.Networking.delete_network(net_create.json()['network']['id'])
@@ -164,4 +176,89 @@ def test_update_network():
         logger.info("Network create failed")
         pytest.skip("Network create failed")
 
+# Overlay Subnets
 
+
+def test_list_subnets():
+    """
+    List subnets and validate
+    """
+    logger.info("***starting test_list_subnets***")
+
+    subnet_list = osx.Networking.list_subnets()
+    logger.info("subnet_list: {}".format(subnet_list.json()))
+    assert subnet_list.status_code == 200
+
+
+def test_subnet_ops():
+    """
+    Validate subnet operations: create_subnet, show_subnet, delete_subnet
+    """
+    # TODO add update_subnet to testcase
+    logger.info("***starting test_subnet_ops***")
+
+    net_name = random_string(10)
+    net_create = osx.Networking.create_network(net_name, admin_state=True, shared=False, external=False)
+    logger.info("New network : {}".format(net_create.json()))
+
+    subnet_create = osx.Networking.create_subnet(net_create.json()['network']['id'], '12.12.12.0/24')
+    logger.info("New subnet : {}".format(subnet_create.json()))
+
+    show_subnet = osx.Networking.show_subnet(subnet_create.json()['subnet']['id'])
+    logger.info("Show subnet : {}".format(subnet_create.json()))
+
+    subnet_delete = osx.Networking.delete_subnet(subnet_create.json()['subnet']['id'])
+    osx.Networking.delete_network(net_create.json()['network']['id'])
+
+    assert subnet_create.status_code == 201 and show_subnet.status_code == 200 and subnet_delete.status_code == 204
+
+
+# vPorts
+
+
+def test_list_ports():
+    """
+    List ports and validate
+    """
+    logger.info("***starting test_list_ports***")
+
+    port_list = osx.Networking.list_ports()
+    logger.info("Port list: {}".format(port_list.json()))
+    assert port_list.status_code == 200
+
+
+def test_port_ops():
+    # TODO - add test case for create port, show port and delete port operations
+    pytest.skip("Incomplete testcase")
+
+# vRouters
+
+
+def test_list_routers():
+    """
+    List routers and validate
+    """
+    logger.info("***starting test_list_routers***")
+
+    router_list = osx.Networking.list_routers()
+    logger.info("Router list: {}".format(router_list.json()))
+    assert router_list.status_code == 200
+
+
+def test_router_ops():
+    """
+    Validate router operations: create_router, show_router, delete_router
+    """
+    # TODO - add_router_interface and delete_router_interface ops
+    logger.info("***starting test_router_ops***")
+
+    router_name = random_string(10)
+    router_create = osx.Networking.create_router(router_name)
+    logger.info("New router: {}".format(router_create.json()))
+
+    router_show = osx.Networking.show_router(router_create.json()['router']['id'])
+    logger.info("Router details: {}".format(router_show.json()))
+
+    router_delete = osx.Networking.delete_router(router_create.json()['router']['id'])
+
+    assert router_create.status_code == 201 and router_show.status_code == 200 and router_delete.status_code == 204
