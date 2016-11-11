@@ -8,8 +8,17 @@ import json
 
 
 class OSSession(object):
+    """
+    OpenStack session
+    """
 
     def __init__(self, openstack_ip, username, password):
+        """
+
+        :param openstack_ip: <str> IP address of the openstack node you're trying to connect to
+        :param username: <str> username for authentication
+        :param password: <str> password for authentication
+        """
         self.username = username
         self.password = password
         self.openstack_ip = openstack_ip
@@ -23,13 +32,17 @@ class OSSession(object):
         self.scoped_token = self.Identity.fetch_scoped_token()
         self.auth_token = self.scoped_token.headers['X-Subject-Token']
         self.catalog = self.scoped_token.json()['token']['catalog']
-        self.fetch_endpoint_urls()
+        self._fetch_endpoint_urls()
 
         self.Compute = _Compute(self.compute_url, self.auth_token)
         self.Networking = _Networking(self.networking_url, self.auth_token)
         self.Image = _Image(self.image_url, self.auth_token)
 
-    def fetch_endpoint_urls(self):
+    def _fetch_endpoint_urls(self):
+        """
+        Fetch endpoints for OpenStack services
+        :return: None
+        """
         for endpoint in self.catalog:
             if endpoint['name'] == 'nova':
                 for detail in endpoint['endpoints']:
@@ -56,7 +69,6 @@ class _Compute(object):
 
     def __init__(self, url, auth_token):
         """
-
         :param url: <str> URL to reach the compute service
         :param auth_token: <str> auth_token to authorize the compute requests
         """
