@@ -650,23 +650,46 @@ class _Networking(object):
                                 headers=self.request_headers)
         return response
 
-    def create_subnet(self, subnet_name, network_uuid, cidr, ip_version=4):
+    def create_subnet(self, subnet_name, network_uuid, cidr, ip_version=4, **kwargs):
         """
         Create a subnet attached to a network
         :param subnet_name: <str> name for the subnet being created
         :param network_uuid: <UUID> UUID of the network to which the subnet is to be associated
         :param cidr: <cidr> valid subnet CIDR
         :param ip_version: <int> ip protocol version 4/6. default = 4
+        :param kwargs:
+            enable_dhcp: <bool> True/False
+
+            dns_nameservers: <list> list of IP addresses for dns servers
+
+            allocation_pools: [{start : '', end: ''}] list of allocation pool dictionaries with 'start' and 'end' keys
+            with values being IP addresses in string format
+
+            gateway_ip: <str> IP address
+
         :return: response object returned by create_subnet request
         """
-        request_data = json.dumps({
+        subnet_dict = {
             "subnet": {
                 "name": subnet_name,
                 "network_id": network_uuid,
                 "ip_version": ip_version,
                 "cidr": cidr
             }
-        })
+        }
+
+        subnet_elements = ["enable_dhcp",
+                           "dns_nameservers",
+                           "allocation_pools",
+                           "host_routes",
+                           "gateway_ip"]
+
+        for args_key in kwargs:
+            if args_key in subnet_elements:
+                subnet_dict["subnet"][args_key] = kwargs[args_key]
+
+        print subnet_dict
+        request_data = json.dumps(subnet_dict)
         response = requests.post(self.url + "/v2.0/subnets",
                                  headers=self.request_headers,
                                  data=request_data)
