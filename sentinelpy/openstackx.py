@@ -1,5 +1,5 @@
 __author__ = "Kiran Vemuri"
-__email__ = "kiran_vemuri@adaranetworks.com"
+__email__ = "kkvemuri@uh.edu"
 __status__ = "Development"
 __maintainer__ = "Kiran Vemuri"
 
@@ -650,9 +650,10 @@ class _Networking(object):
                                 headers=self.request_headers)
         return response
 
-    def create_subnet(self, network_uuid, cidr, ip_version=4):
+    def create_subnet(self, subnet_name, network_uuid, cidr, ip_version=4):
         """
         Create a subnet attached to a network
+        :param subnet_name: <str> name for the subnet being created
         :param network_uuid: <UUID> UUID of the network to which the subnet is to be associated
         :param cidr: <cidr> valid subnet CIDR
         :param ip_version: <int> ip protocol version 4/6. default = 4
@@ -660,6 +661,7 @@ class _Networking(object):
         """
         request_data = json.dumps({
             "subnet": {
+                "name": subnet_name,
                 "network_id": network_uuid,
                 "ip_version": ip_version,
                 "cidr": cidr

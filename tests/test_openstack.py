@@ -1,3 +1,8 @@
+__author__ = "Kiran Vemuri"
+__email__ = "kiran_vemuri@adaranetworks.com"
+__status__ = "Development"
+__maintainer__ = "Kiran Vemuri"
+
 from sentinelpy.openstackx import OSSession
 from sentinelpy.logx import Log
 import pytest
