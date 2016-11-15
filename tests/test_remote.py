@@ -3,8 +3,8 @@ __email__ = "kkvemuri@uh.edu"
 __status__ = "Development"
 __maintainer__ = "None"
 
-from sentinelpy import remotex
-from sentinelpy import logx
+from tinyblox import remotex
+from tinyblox import logx
 import yaml
 import datetime
 

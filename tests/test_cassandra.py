@@ -3,8 +3,8 @@ __email__ = "kkvemuri@uh.edu"
 __status__ = "Development"
 __maintainer__ = "None"
 
-from sentinelpy import cassandrax
-from sentinelpy import logx
+from tinyblox import cassandrax
+from tinyblox import logx
 import datetime
 import yaml
 

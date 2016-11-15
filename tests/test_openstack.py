@@ -3,8 +3,8 @@ __email__ = "kiran_vemuri@adaranetworks.com"
 __status__ = "Development"
 __maintainer__ = "Kiran Vemuri"
 
-from sentinelpy.openstackx import OSSession
-from sentinelpy.logx import Log
+from tinyblox.openstackx import OSSession
+from tinyblox.logx import Log
 import pytest
 import random
 import string

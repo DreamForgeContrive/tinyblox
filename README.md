@@ -1,4 +1,4 @@
-# sentinelpy - Python Automation Framework
+# tinyblox - Python Automation Framework
 
 ## Modules:
 * cassandrax - Facilitate cassandra interactions to a cassandra cluster
@@ -20,4 +20,4 @@ Please install the following dependencies:
 
 
 To install sentinelpy:
-`pip install sentinelpy`
+`pip install tinyblox`
