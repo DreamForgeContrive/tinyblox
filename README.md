@@ -1,4 +1,4 @@
-# tinyblox - Python Automation Framework
+# tinyblox - collection of api blocks written in python to speedup automation
 
 ## Modules:
 * cassandrax - Facilitate cassandra interactions to a cassandra cluster
@@ -10,6 +10,9 @@
     * identityx
     * imagex
     * networkingx
+* toolx - collection of generic tools
+    * random_string - Random string generation with combination of lower and upper case alphabets, digits, special characters and white space
+    * random_ip - random IP address object generation with CIDR bit and subnet address generation
 
 
 
