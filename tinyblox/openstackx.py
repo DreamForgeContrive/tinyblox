@@ -594,16 +594,17 @@ class _Networking(object):
         :param external: <bool> boolean flag to indicate whether the network is external true/false. Default = False
         :return: response object from create_network request
         """
-        # request_data = json.dumps(get_network_dict(kwargs))
 
-        request_data = json.dumps({
+        network_dict = {
             "network": {
                 "name": network_name,
                 "admin_state_up": admin_state,
                 "shared": shared,
                 "router:external": external
             }
-        })
+        }
+
+        request_data = json.dumps(network_dict)
 
         response = requests.post(self.url + "/v2.0/networks",
                                  headers=self.request_headers,
@@ -753,9 +754,27 @@ class _Networking(object):
                                 headers=self.request_headers)
         return response
 
-    def create_port(self):
-        pass
-        # TODO
+    def create_port(self, network_uuid, port_name, admin_state=True):
+        """
+        Create a port attached to the specified network
+        :param network_uuid: <uuid> UUID of the network in which the port is to be created
+        :param port_name: <str> Name for the port being created
+        :param admin_state: <bool> boolean flag to specify if the admin_state is True/False. Default = True
+        :return: response object returned by the create_port request
+        """
+        port_dict = {
+            "port": {
+                "network_id": network_uuid,
+                "name": port_name,
+                "admin_state_up": admin_state
+            }
+        }
+
+        request_data = json.dumps(port_dict)
+        response = requests.post(self.url + "/v2.0/ports",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
 
     def delete_port(self, port_uuid):
         """
@@ -790,20 +809,30 @@ class _Networking(object):
                                 headers=self.request_headers)
         return response
 
-    def create_router(self, router_name, admin_state=True):
+    def create_router(self, router_name, admin_state=True, **kwargs):
         """
         Create a router
         :param router_name: <str> Name for the router that is being created
         :param admin_state: <bool> boolean flag to represent if the admin_state of the router is up/down.
                             Default = True
+        :param kwargs:
+                description: <str> description for the router being created
         :return: response object returned by the create_router request
         """
-        request_data = json.dumps({
+        router_dict = {
             "router": {
                 "name": router_name,
                 "admin_state_up": admin_state
             }
-        })
+        }
+
+        router_elements = ['description']
+
+        for args_key in kwargs:
+            if args_key in router_elements:
+                router_dict['router'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(router_dict)
         response = requests.post(self.url + "/v2.0/routers",
                                  headers=self.request_headers,
                                  data=request_data)
