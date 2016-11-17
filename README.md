@@ -1,4 +1,4 @@
-# tinyblox - collection of api blocks written in python to speedup automation
+# TinyBlox - collection of api blocks written in python to help speedup automation
 
 ## Modules:
 * cassandrax - Facilitate cassandra interactions to a cassandra cluster
@@ -14,13 +14,10 @@
     * random_string - Random string generation with combination of lower and upper case alphabets, digits, special characters and white space
     * random_ip - random IP address object generation with CIDR bit and subnet address generation
 
-
-
 ## Installation:
 
 Please install the following dependencies:
 `pip install cassandra-driver paramiko==1.17.0 requests pyyaml`
-
 
 To install sentinelpy:
 `pip install tinyblox`

@@ -594,16 +594,17 @@ class _Networking(object):
         :param external: <bool> boolean flag to indicate whether the network is external true/false. Default = False
         :return: response object from create_network request
         """
-        # request_data = json.dumps(get_network_dict(kwargs))
 
-        request_data = json.dumps({
+        network_dict = {
             "network": {
                 "name": network_name,
                 "admin_state_up": admin_state,
                 "shared": shared,
                 "router:external": external
             }
-        })
+        }
+
+        request_data = json.dumps(network_dict)
 
         response = requests.post(self.url + "/v2.0/networks",
                                  headers=self.request_headers,
@@ -688,7 +689,6 @@ class _Networking(object):
             if args_key in subnet_elements:
                 subnet_dict["subnet"][args_key] = kwargs[args_key]
 
-        print subnet_dict
         request_data = json.dumps(subnet_dict)
         response = requests.post(self.url + "/v2.0/subnets",
                                  headers=self.request_headers,
@@ -753,9 +753,27 @@ class _Networking(object):
                                 headers=self.request_headers)
         return response
 
-    def create_port(self):
-        pass
-        # TODO
+    def create_port(self, network_uuid, port_name, admin_state=True):
+        """
+        Create a port attached to the specified network
+        :param network_uuid: <uuid> UUID of the network in which the port is to be created
+        :param port_name: <str> Name for the port being created
+        :param admin_state: <bool> boolean flag to specify if the admin_state is True/False. Default = True
+        :return: response object returned by the create_port request
+        """
+        port_dict = {
+            "port": {
+                "network_id": network_uuid,
+                "name": port_name,
+                "admin_state_up": admin_state
+            }
+        }
+
+        request_data = json.dumps(port_dict)
+        response = requests.post(self.url + "/v2.0/ports",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
 
     def delete_port(self, port_uuid):
         """
@@ -790,37 +808,85 @@ class _Networking(object):
                                 headers=self.request_headers)
         return response
 
-    def create_router(self, router_name, admin_state=True):
+    def create_router(self, router_name, admin_state=True, **kwargs):
         """
         Create a router
         :param router_name: <str> Name for the router that is being created
         :param admin_state: <bool> boolean flag to represent if the admin_state of the router is up/down.
                             Default = True
+        :param kwargs:
+                description: <str> description for the router being created
+                external_gateway_info: <dict> The external gateway information of the router.
+                                        If the router has an external gateway, this would be a dict with
+                                        network_id<uuid>,
+                                        enable_snat<bool>
+                                        and external_fixed_ips<dict>. Otherwise, this would be None.
+                                        eg: {'network_id': u'8fde2286-28a1-4eec-a57d-795ab292a98e',
+                                         'enable_snat': True,
+                                         'external_fixed_ips': [{'subnet_id': u'0f020730-9362-4753-adf6-91610d92cd9d'}]}
+
+                                         optionally, you could also provide a specific IP address for the gateway_ip.
+                                         eg: {'network_id': u'8fde2286-28a1-4eec-a57d-795ab292a98e',
+                                         'enable_snat': True,
+                                         'external_fixed_ips': [{'subnet_id': u'0f020730-9362-4753-adf6-91610d92cd9d',
+                                                                'ip_address': '25.25.25.5'}]}
+
         :return: response object returned by the create_router request
         """
-        request_data = json.dumps({
+        router_dict = {
             "router": {
                 "name": router_name,
                 "admin_state_up": admin_state
             }
-        })
+        }
+
+        router_elements = ['description', 'external_gateway_info']
+
+        for args_key in kwargs:
+            if args_key in router_elements:
+                router_dict['router'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(router_dict)
         response = requests.post(self.url + "/v2.0/routers",
                                  headers=self.request_headers,
                                  data=request_data)
         return response
 
-    def update_router(self, router_uuid, router_name):
+    def update_router(self, router_uuid, **kwargs):
         """
         Update router
         :param router_uuid: <uuid> uuid of the router that is to be updated
-        :param router_name: <str> new name for the router
+        :param kwargs:
+                name: <str> Name for the router
+                external_gateway_info: <dict> The external gateway information of the router.
+                                        If the router has an external gateway, this would be a dict with
+                                        network_id<uuid>,
+                                        enable_snat<bool>
+                                        and external_fixed_ips<dict>. Otherwise, this would be None.
+                                        eg: {'network_id': u'8fde2286-28a1-4eec-a57d-795ab292a98e',
+                                         'enable_snat': True,
+                                         'external_fixed_ips': [{'subnet_id': u'0f020730-9362-4753-adf6-91610d92cd9d'}]}
+
+                                         optionally, you could also provide a specific IP address for the gateway_ip.
+                                         eg: {'network_id': u'8fde2286-28a1-4eec-a57d-795ab292a98e',
+                                         'enable_snat': True,
+                                         'external_fixed_ips': [{'subnet_id': u'0f020730-9362-4753-adf6-91610d92cd9d',
+                                                                'ip_address': '25.25.25.5'}]}
+
         :return: response object returned by the update_router request
         """
-        request_data = json.dumps({
-            "router": {
-                "name": router_name
-            }
-        })
+
+        router_elements = ['name', 'external_gateway_info']
+
+        router_dict = {
+            'router': {}
+        }
+
+        for args_key in kwargs:
+            if args_key in router_elements:
+                router_dict['router'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(router_dict)
         response = requests.put(self.url + "/v2.0/routers/{}".format(router_uuid),
                                 headers=self.request_headers,
                                 data=request_data)
