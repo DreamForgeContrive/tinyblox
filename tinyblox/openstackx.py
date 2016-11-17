@@ -931,3 +931,60 @@ class _Networking(object):
                                 headers=self.request_headers,
                                 data=request_data)
         return response
+
+    # Floating IP
+    def list_floating_ip(self):
+        """
+        List all available floating ips
+        :return: response object returned by the list_floating_ips request
+        """
+        response = requests.get(self.url + "/v2.0/floatingips",
+                                headers=self.request_headers)
+        return response
+
+    def create_floating_ip(self, network_uuid):
+        """
+        Create a floating IP attached to the given network
+        :param network_uuid: <uuid> UUID of the network in which floating IP is to be created
+        :return: response object returned by the create_floating_ip request
+        """
+        request_dict = {
+            "floatingip": {
+                "floating_network_id": network_uuid
+            }
+        }
+        request_data = json.dumps(request_dict)
+        response = requests.post(self.url + "/v2.0/floatingips",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
+
+    def show_floating_ip_details(self, floatingip_uuid):
+        """
+        Show details for the given floating_ip
+        :param floatingip_uuid: <uuid> UUID of the floating_ip whose details are to be fetched
+        :return: response object returned bu the show_floating_ip_details request
+        """
+        response = requests.get(self.url + "/v2.0/floatingips/{}".format(floatingip_uuid),
+                                headers=self.request_headers)
+        return response
+
+    # TODO
+    def update_floating_ip(self, floatingip_uuid, port_uuid):
+        """
+        Updates a floating IP and its association with an internal port.
+        :param floatingip_uuid: <uuid> UUID of the floating_ip that is to be updated
+        :param port_uuid: <uuid> UUID of the port that is to be associated to the floating IP
+        :return: response object returned by the update_floating_ip request
+        """
+        pass
+
+    def delete_floating_ip(self, floatingip_uuid):
+        """
+        Deletes a floating IP and, if present, its associated port.
+        :param floatingip_uuid: <uuid> UUID of the floating_ip that is to be deleted
+        :return: response object returned by the delete_floating_ip request
+        """
+        response = requests.delete(self.url + "/v2.0/floatingips/{}".format(floatingip_uuid),
+                                   headers=self.request_headers)
+        return response
