@@ -689,7 +689,6 @@ class _Networking(object):
             if args_key in subnet_elements:
                 subnet_dict["subnet"][args_key] = kwargs[args_key]
 
-        print subnet_dict
         request_data = json.dumps(subnet_dict)
         response = requests.post(self.url + "/v2.0/subnets",
                                  headers=self.request_headers,
@@ -817,6 +816,21 @@ class _Networking(object):
                             Default = True
         :param kwargs:
                 description: <str> description for the router being created
+                external_gateway_info: <dict> The external gateway information of the router.
+                                        If the router has an external gateway, this would be a dict with
+                                        network_id<uuid>,
+                                        enable_snat<bool>
+                                        and external_fixed_ips<dict>. Otherwise, this would be None.
+                                        eg: {'network_id': u'8fde2286-28a1-4eec-a57d-795ab292a98e',
+                                         'enable_snat': True,
+                                         'external_fixed_ips': [{'subnet_id': u'0f020730-9362-4753-adf6-91610d92cd9d'}]}
+
+                                         optionally, you could also provide a specific IP address for the gateway_ip.
+                                         eg: {'network_id': u'8fde2286-28a1-4eec-a57d-795ab292a98e',
+                                         'enable_snat': True,
+                                         'external_fixed_ips': [{'subnet_id': u'0f020730-9362-4753-adf6-91610d92cd9d',
+                                                                'ip_address': '25.25.25.5'}]}
+
         :return: response object returned by the create_router request
         """
         router_dict = {
@@ -826,7 +840,7 @@ class _Networking(object):
             }
         }
 
-        router_elements = ['description']
+        router_elements = ['description', 'external_gateway_info']
 
         for args_key in kwargs:
             if args_key in router_elements:
@@ -838,18 +852,41 @@ class _Networking(object):
                                  data=request_data)
         return response
 
-    def update_router(self, router_uuid, router_name):
+    def update_router(self, router_uuid, **kwargs):
         """
         Update router
         :param router_uuid: <uuid> uuid of the router that is to be updated
-        :param router_name: <str> new name for the router
+        :param kwargs:
+                name: <str> Name for the router
+                external_gateway_info: <dict> The external gateway information of the router.
+                                        If the router has an external gateway, this would be a dict with
+                                        network_id<uuid>,
+                                        enable_snat<bool>
+                                        and external_fixed_ips<dict>. Otherwise, this would be None.
+                                        eg: {'network_id': u'8fde2286-28a1-4eec-a57d-795ab292a98e',
+                                         'enable_snat': True,
+                                         'external_fixed_ips': [{'subnet_id': u'0f020730-9362-4753-adf6-91610d92cd9d'}]}
+
+                                         optionally, you could also provide a specific IP address for the gateway_ip.
+                                         eg: {'network_id': u'8fde2286-28a1-4eec-a57d-795ab292a98e',
+                                         'enable_snat': True,
+                                         'external_fixed_ips': [{'subnet_id': u'0f020730-9362-4753-adf6-91610d92cd9d',
+                                                                'ip_address': '25.25.25.5'}]}
+
         :return: response object returned by the update_router request
         """
-        request_data = json.dumps({
-            "router": {
-                "name": router_name
-            }
-        })
+
+        router_elements = ['name', 'external_gateway_info']
+
+        router_dict = {
+            'router': {}
+        }
+
+        for args_key in kwargs:
+            if args_key in router_elements:
+                router_dict['router'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(router_dict)
         response = requests.put(self.url + "/v2.0/routers/{}".format(router_uuid),
                                 headers=self.request_headers,
                                 data=request_data)
