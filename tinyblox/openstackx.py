@@ -93,29 +93,48 @@ class _Compute(object):
                       image_uuid,
                       flavor_uuid,
                       availability_zone,
-                      network_uuid,
-                      security_group=None):
+                      **kwargs):
         """
         Create a server
         :param server_name: <str> name for the server that is being created
         :param image_uuid: <uuid> UUID of the image that is to be used to boot the server
         :param flavor_uuid: <uuid> UUID of the flavor for the instance
         :param availability_zone: <str> availability_zone to boot the instance in
-        :param network_uuid: <uuid> UUID of the network to be associated to the server
-        :param security_group: <str> name of the security group to be associated with the instance
+        :param kwargs:
+                networks: <list of dict> A networks object. Required parameter when there are multiple networks defined
+                            for the tenant. When you do not specify the networks parameter, the server attaches to
+                            the only network created for the current tenant.
+                            example:  [{ "uuid": network_uuid }, ]
+                security_groups: <list of dict> One or more security groups.
+                            Specify the name of the security group in the name attribute.
+                            If you omit this attribute, the API creates the server in the default security group.
+                            example: [{ "name": "default"}]
+                user_data: <str> Configuration information or scripts to use upon launch. Must be Base64 encoded.
+                metadata: <dict> Metadata key and value pairs.
+                            The maximum size of the metadata key and value is 255 bytes each.
+                            example: {"My Server Name" : "Apache1"}
+                key_name: <str> Key pair name.
         :return: response object returned by the create_Server request
         """
-        request_data = json.dumps({
+        server_dict = {
             "server": {
                 "name": server_name,
                 "imageRef": image_uuid,
                 "flavorRef": flavor_uuid,
                 "availability_zone": availability_zone,
-                "networks": [{
-                    "uuid": network_uuid
-                }]
             }
-        })
+        }
+        server_elements = ["networks",
+                           "security_groups",
+                           "metadata",
+                           "user_data",
+                           "key_name"]
+
+        for args_key in kwargs:
+            if args_key in server_elements:
+                server_dict["server"][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(server_dict)
         response = requests.post(self.url + "/servers",
                                  headers=self.request_headers,
                                  data=request_data)
@@ -155,13 +174,23 @@ class _Compute(object):
 
     # Floating IP
 
-    def associate_floatingip(self):
-        pass
-        # TODO
+    def associate_floatingip(self, instance_uuid):
+        request_data = json.dumps({
+            "addFloatingIp": {}
+        })
+        response = requests.get(self.url + "/servers/{}/action".format(instance_uuid),
+                                headers=self.request_headers,
+                                data=request_data)
+        return response
 
-    def disassociate_floatingip(self):
-        pass
-        # TODO
+    def disassociate_floatingip(self, instance_uuid):
+        request_data = json.dumps({
+            "removeFloatingIp": {}
+        })
+        response = requests.get(self.url + "/servers/{}/action".format(instance_uuid),
+                                headers=self.request_headers,
+                                data=request_data)
+        return response
 
     # Flavors
 
@@ -930,4 +959,61 @@ class _Networking(object):
         response = requests.put(self.url + "/v2.0/routers/{}/remove_router_interface".format(router_uuid),
                                 headers=self.request_headers,
                                 data=request_data)
+        return response
+
+    # Floating IP
+    def list_floating_ip(self):
+        """
+        List all available floating ips
+        :return: response object returned by the list_floating_ips request
+        """
+        response = requests.get(self.url + "/v2.0/floatingips",
+                                headers=self.request_headers)
+        return response
+
+    def create_floating_ip(self, network_uuid):
+        """
+        Create a floating IP attached to the given network
+        :param network_uuid: <uuid> UUID of the network in which floating IP is to be created
+        :return: response object returned by the create_floating_ip request
+        """
+        request_dict = {
+            "floatingip": {
+                "floating_network_id": network_uuid
+            }
+        }
+        request_data = json.dumps(request_dict)
+        response = requests.post(self.url + "/v2.0/floatingips",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
+
+    def show_floating_ip_details(self, floatingip_uuid):
+        """
+        Show details for the given floating_ip
+        :param floatingip_uuid: <uuid> UUID of the floating_ip whose details are to be fetched
+        :return: response object returned bu the show_floating_ip_details request
+        """
+        response = requests.get(self.url + "/v2.0/floatingips/{}".format(floatingip_uuid),
+                                headers=self.request_headers)
+        return response
+
+    # TODO
+    def update_floating_ip(self, floatingip_uuid, port_uuid):
+        """
+        Updates a floating IP and its association with an internal port.
+        :param floatingip_uuid: <uuid> UUID of the floating_ip that is to be updated
+        :param port_uuid: <uuid> UUID of the port that is to be associated to the floating IP
+        :return: response object returned by the update_floating_ip request
+        """
+        pass
+
+    def delete_floating_ip(self, floatingip_uuid):
+        """
+        Deletes a floating IP and, if present, its associated port.
+        :param floatingip_uuid: <uuid> UUID of the floating_ip that is to be deleted
+        :return: response object returned by the delete_floating_ip request
+        """
+        response = requests.delete(self.url + "/v2.0/floatingips/{}".format(floatingip_uuid),
+                                   headers=self.request_headers)
         return response
