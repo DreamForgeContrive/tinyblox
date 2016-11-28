@@ -382,61 +382,6 @@ class _Compute(object):
                                 headers=self.request_headers)
         return response
 
-    # Security groups
-
-    def list_secutity_groups(self):
-        """
-        List existing security groups
-        :return: response object returned by the list_security_groups request
-        """
-        response = requests.get(self.url + "/os-security-groups",
-                                headers=self.request_headers)
-        return response
-
-    def create_security_group(self):
-        pass
-        # TODO
-
-    def show_security_group(self):
-        pass
-        # TODO
-
-    def update_security_group(self):
-        pass
-        # TODO
-
-    def delete_security_group(self):
-        pass
-        # TODO
-
-    # Default security group rules | Not currently supported by neutron driver
-
-    """
-    def list_default_security_group_rules(self):
-        request_headers = {"Content-type": "application/json",
-                           "X-Auth-Token": self.auth_token}
-        response = requests.get(self.url + "/os-security-group-default-rules",
-                                headers=request_headers)
-        return response.json()
-
-    def create_default_security_group_rule(self):
-        pass
-
-    def delete_default_security_group_rule(self):
-        pass
-
-    """
-
-    # Rules for security group
-
-    def create_security_group_rule(self):
-        pass
-        # TODO
-
-    def delete_security_group_rule(self):
-        pass
-        # TODO
-
 
 class _Identity(object):
     """
@@ -999,14 +944,28 @@ class _Networking(object):
         return response
 
     # TODO
-    def update_floating_ip(self, floatingip_uuid, port_uuid):
+    def update_floating_ip(self, floatingip_uuid, **kwargs):
         """
         Updates a floating IP and its association with an internal port.
         :param floatingip_uuid: <uuid> UUID of the floating_ip that is to be updated
-        :param port_uuid: <uuid> UUID of the port that is to be associated to the floating IP
+        :param kwargs:
+                port_id: <uuid> The UUID of the port.
         :return: response object returned by the update_floating_ip request
         """
-        pass
+        floatingip_dict = {
+            "floatingip": {}
+        }
+        floatingip_elements = ["port_id"]
+
+        for args_key in kwargs:
+            if args_key in floatingip_elements:
+                floatingip_dict['floatingip'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(floatingip_dict)
+        response = requests.put(self.url + "/v2.0/floatingips/{}".format(floatingip_uuid),
+                                headers=self.request_headers,
+                                data=request_data)
+        return response
 
     def delete_floating_ip(self, floatingip_uuid):
         """
@@ -1017,3 +976,151 @@ class _Networking(object):
         response = requests.delete(self.url + "/v2.0/floatingips/{}".format(floatingip_uuid),
                                    headers=self.request_headers)
         return response
+
+    # Security groups
+
+    def list_security_groups(self):
+        """
+        List existing security groups
+        :return: response object returned by the list_security_groups request
+        """
+        response = requests.get(self.url + "/v2.0/security-groups",
+                                headers=self.request_headers)
+        return response
+
+    def create_security_group(self, name, description):
+        """
+        Creates an OpenStack Networking security group.
+        :param name: <str> Human-readable name of the resource.
+        :param description: <str> The human-readable description for the resource.
+        :return: response object returned by the create security group request
+        """
+        sec_group_dict = {
+            "security_group": {
+                "name": name,
+                "description": description,
+            }
+        }
+
+        request_data = json.dumps(sec_group_dict)
+        response = requests.post(self.url + "/v2.0/security-groups",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
+
+    def show_security_group(self, security_group_uuid):
+        """
+        Shows details for a security group
+        :param security_group_uuid: <uuid> The security group UUID to associate with this security group rule.
+        :return: response object returned by the show security group request
+        """
+        response = requests.get(self.url + "/v2.0/security-groups/{}".format(security_group_uuid),
+                                headers=self.request_headers)
+        return response
+
+    def update_security_group(self, security_group_uuid, **kwargs):
+        """
+        Updates a security group.
+        :param security_group_uuid: <uuid> The security group UUID to associate with this security group rule.
+        :param kwargs:
+                name: <str> Human-readable name of the resource.
+                description: <str> The human-readable description for the resource.
+        :return: response object returned by the update security group request
+        """
+        sec_group_dict = {
+            "security_group": {}
+        }
+        sec_group_elements = ["name", "description"]
+
+        for args_key in kwargs:
+            if args_key in sec_group_elements:
+                sec_group_dict['security_group'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(sec_group_dict)
+        response = requests.put(self.url + "/v2.0/security-groups/{}".format(security_group_uuid),
+                                headers=self.request_headers,
+                                data=request_data)
+        return response
+
+    def delete_security_group(self, security_group_uuid):
+        """
+        Deletes an OpenStack Networking security group.
+        :param security_group_uuid: <uuid> The security group UUID to associate with this security group rule.
+        :return: response object returned by the delete security group request
+        """
+        response = requests.delete(self.url + "/v2.0/security-groups/{}".format(security_group_uuid),
+                                   headers=self.request_headers)
+        return response
+
+    # Rules for security group
+
+    def create_security_group_rule(self, security_group_uuid, direction, **kwargs):
+        """
+        Creates an OpenStack Networking security group rule.
+        :param security_group_uuid: <uuid> The security group UUID to associate with this security group rule.
+        :param direction: <str> Ingress or egress, which is the direction in which the rule is applied.
+        :param kwargs:
+                port_range_min: <int> The minimum port number in the range that is matched by the security group rule.
+                port_range_max: <int> The maximum port number in the range that is matched by the security group rule.
+                ethertype: <str> Must be IPv4 or IPv6, and addresses represented in
+                        CIDR must match the ingress or egress rules.
+                protocol: <str> The IP protocol. Valid value is icmp, tcp, udp, or null. No default.
+                remote_group_id: <uuid> The remote group UUID to associate with this security group rule.
+                            You can specify either the remote_group_id or
+                            remote_ip_prefix attribute in the request body.
+                remote_cidr: <str> The remote IP cidr  to associate with this rule packet.
+        :return: response object returned by the create security group rule request
+        """
+        sec_group_rule_dict = {
+            "security_group_rule": {
+                "direction": direction,
+                "security_group_id": security_group_uuid
+            }
+        }
+
+        sec_group_rule_elements = ["port_range_min",
+                                   "port_range_max",
+                                   "ethertype",
+                                   "protocol",
+                                   "remote_group_id",
+                                   "remote_cidr"]
+        for args_key in kwargs:
+            if args_key in sec_group_rule_elements:
+                sec_group_rule_dict['security_group_rule'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(sec_group_rule_dict)
+
+        response = requests.post(self.url + "/v2.0/security-group-rules",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
+
+    def delete_security_group_rule(self, security_group_rule_uuid):
+        """
+        Deletes a rule from an OpenStack Networking security group.
+        :param security_group_rule_uuid: <uuid> UUID for the security group rule that is to be deleted
+        :return:
+        """
+        response = requests.delete(self.url + "/v2.0/security-group-rules/{}".format(security_group_rule_uuid),
+                                   headers=self.request_headers)
+        return response
+
+    def list_security_group_rules(self):
+        """
+        Lists a summary of all OpenStack Networking security group rules that the project has access to.
+        :return: response object returned by the list security group rules request
+        """
+        response = requests.get(self.url + "/v2.0/security-group-rules",
+                                headers=self.request_headers)
+        return response
+
+    def show_security_group_rule(self, security_group_rule_uuid):
+        """
+        Shows detailed information for a security group rule.
+        :param security_group_rule_uuid: <uuid> UUID for the security group rule
+        :return: response object returned by the show security group rule request
+        """
+        response = requests.get(self.url + "/v2.0/security-group-rules/{}".format(security_group_rule_uuid),
+                                headers=self.request_headers)
+        return response
+

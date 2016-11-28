@@ -14,7 +14,7 @@ packages = [
 
 setup(name='tinyblox',
       packages=packages,
-      version='0.1.11',
+      version='0.1.12',
       description='collection of api blocks written in python to help speedup automation',
       author='Kiran Vemuri',
       author_email='kkvemuri@uh.edu',
