@@ -210,22 +210,38 @@ class _Compute(object):
 
     # Floating IP
 
-    def associate_floatingip(self, instance_uuid):
+    def associate_floatingip(self, instance_uuid, floatingip_address):
+        """
+        Adds a floating IP address to a server, which associates that address with the server
+        :param instance_uuid: <uuid> The UUID of the server.
+        :param floatingip_address: <str> floating ip address
+        :return: response object returned by the associate floatingip request
+        """
         request_data = json.dumps({
-            "addFloatingIp": {}
+            "addFloatingIp": {
+                "address": floatingip_address
+            }
         })
-        response = requests.get(self.url + "/servers/{}/action".format(instance_uuid),
-                                headers=self.request_headers,
-                                data=request_data)
+        response = requests.post(self.url + "/servers/{}/action".format(instance_uuid),
+                                 headers=self.request_headers,
+                                 data=request_data)
         return response
 
-    def disassociate_floatingip(self, instance_uuid):
+    def disassociate_floatingip(self, instance_uuid, floatingip_address):
+        """
+        Removes, or disassociates, a floating IP address from a server.
+        :param instance_uuid: <uuid> UUID of the instance
+        :param floatingip_address: <str> floating ip address
+        :return: response object returned by the disassociate floating ip request
+        """
         request_data = json.dumps({
-            "removeFloatingIp": {}
+            "removeFloatingIp": {
+                "address": floatingip_address
+            }
         })
-        response = requests.get(self.url + "/servers/{}/action".format(instance_uuid),
-                                headers=self.request_headers,
-                                data=request_data)
+        response = requests.post(self.url + "/servers/{}/action".format(instance_uuid),
+                                 headers=self.request_headers,
+                                 data=request_data)
         return response
 
     # Flavors
