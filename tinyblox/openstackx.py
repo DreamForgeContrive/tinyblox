@@ -144,6 +144,17 @@ class _Compute(object):
         pass
         # TODO
 
+    def list_servers_detail(self):
+        """
+        List existing servers(instances) in detail.
+        For each server, shows server details including configuration drive, extended status,
+        and server usage information.
+        :return: response object returned by the list_servers_detail request
+        """
+        response = requests.get(self.url + "/servers/detail",
+                                headers=self.request_headers)
+        return response
+
     def show_server(self, server_uuid):
         """
         Show server details
@@ -152,6 +163,31 @@ class _Compute(object):
         """
         response = requests.get(self.url + "/servers/{}".format(server_uuid),
                                 headers=self.request_headers)
+        return response
+
+    def update_server(self, server_uuid, **kwargs):
+        """
+        Updates the editable attributes of an existing server.
+        :param server_uuid: <uuid> The UUID of the server.
+        :param kwargs:
+                name: <str> The server name.
+                description: <str> A free form description of the server. Limited to 255 characters in length.
+        :return: response object returned by the update_server request
+        """
+        server_dict = {
+            "server": {
+            }
+        }
+
+        server_elements = ['name', 'description']
+
+        for args_key in kwargs:
+            if args_key in server_elements:
+                server_dict["server"][args_key] = kwargs[args_key]
+        request_data = json.dumps(server_dict)
+        response = requests.put(self.url + "/servers/{}".format(server_uuid),
+                                headers=self.request_headers,
+                                data=request_data)
         return response
 
     def delete_server(self, server_uuid):
@@ -174,22 +210,38 @@ class _Compute(object):
 
     # Floating IP
 
-    def associate_floatingip(self, instance_uuid):
+    def associate_floatingip(self, instance_uuid, floatingip_address):
+        """
+        Adds a floating IP address to a server, which associates that address with the server
+        :param instance_uuid: <uuid> The UUID of the server.
+        :param floatingip_address: <str> floating ip address
+        :return: response object returned by the associate floatingip request
+        """
         request_data = json.dumps({
-            "addFloatingIp": {}
+            "addFloatingIp": {
+                "address": floatingip_address
+            }
         })
-        response = requests.get(self.url + "/servers/{}/action".format(instance_uuid),
-                                headers=self.request_headers,
-                                data=request_data)
+        response = requests.post(self.url + "/servers/{}/action".format(instance_uuid),
+                                 headers=self.request_headers,
+                                 data=request_data)
         return response
 
-    def disassociate_floatingip(self, instance_uuid):
+    def disassociate_floatingip(self, instance_uuid, floatingip_address):
+        """
+        Removes, or disassociates, a floating IP address from a server.
+        :param instance_uuid: <uuid> UUID of the instance
+        :param floatingip_address: <str> floating ip address
+        :return: response object returned by the disassociate floating ip request
+        """
         request_data = json.dumps({
-            "removeFloatingIp": {}
+            "removeFloatingIp": {
+                "address": floatingip_address
+            }
         })
-        response = requests.get(self.url + "/servers/{}/action".format(instance_uuid),
-                                headers=self.request_headers,
-                                data=request_data)
+        response = requests.post(self.url + "/servers/{}/action".format(instance_uuid),
+                                 headers=self.request_headers,
+                                 data=request_data)
         return response
 
     # Flavors
@@ -1068,7 +1120,7 @@ class _Networking(object):
                 remote_group_id: <uuid> The remote group UUID to associate with this security group rule.
                             You can specify either the remote_group_id or
                             remote_ip_prefix attribute in the request body.
-                remote_cidr: <str> The remote IP cidr  to associate with this rule packet.
+                remote_ip_prefix: <str> The remote IP cidr  to associate with this rule packet.
         :return: response object returned by the create security group rule request
         """
         sec_group_rule_dict = {
@@ -1083,7 +1135,7 @@ class _Networking(object):
                                    "ethertype",
                                    "protocol",
                                    "remote_group_id",
-                                   "remote_cidr"]
+                                   "remote_ip_prefix"]
         for args_key in kwargs:
             if args_key in sec_group_rule_elements:
                 sec_group_rule_dict['security_group_rule'][args_key] = kwargs[args_key]
