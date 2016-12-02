@@ -9,7 +9,7 @@ import pytest
 import random
 import string
 
-osx = OSSession('10.11.86.3', 'admin', 'password')
+osx = OSSession('<keystone_ip>', 'admin', 'password')
 logging = Log('./unit_test.log')
 logger = logging.log_handler()
 
