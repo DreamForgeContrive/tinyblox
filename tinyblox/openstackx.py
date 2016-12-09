@@ -28,8 +28,8 @@ class OSSession(object):
         self.image_url = None
         self.networking_url = None
 
-        self.Identity = _Identity(self.identity_url, self.username, self.password, domain='default')
-        self.scoped_token = self.Identity.fetch_scoped_token()
+        self.IdentityInit = _IdentityInit(self.identity_url, self.username, self.password, domain='default')
+        self.scoped_token = self.IdentityInit.fetch_scoped_token()
         self.auth_token = self.scoped_token.headers['X-Subject-Token']
         self.catalog = self.scoped_token.json()['token']['catalog']
         self._fetch_endpoint_urls()
@@ -37,6 +37,7 @@ class OSSession(object):
         self.Compute = _Compute(self.compute_url, self.auth_token)
         self.Networking = _Networking(self.networking_url, self.auth_token)
         self.Image = _Image(self.image_url, self.auth_token)
+        self.Identity = _Identity(self.identity_url, self.auth_token)
 
     def _fetch_endpoint_urls(self):
         """
@@ -435,7 +436,7 @@ class _Compute(object):
         return response
 
 
-class _Identity(object):
+class _IdentityInit(object):
     """
         Interface to interact with keystone service using REST
         """
@@ -523,6 +524,588 @@ class _Identity(object):
         response = requests.get(self.url + "/users/" + self.user_id + "/projects",
                                 headers=request_headers)
 
+        return response
+
+
+class _Identity(object):
+
+    def __init__(self, url, auth_token):
+        self.url = url
+        self.auth_token = auth_token
+        self.request_headers = {"Content-type": "application/json",
+                                "X-Auth-Token": self.auth_token}
+
+    # Domains
+    def list_domains(self):
+        """
+        List all domains
+        :return: response object returned by list domains request
+        """
+        response = requests.get(self.url + "/domains",
+                                headers=self.request_headers)
+        return response
+
+    def create_domain(self, name, **kwargs):
+        """
+        Create a domain
+        :param name: <str> Name for the domain being created
+        :param kwargs:
+        :return: response object returned by the create domain request
+        """
+        domain_dict = {
+            "domain": {
+                "name": name
+            }
+        }
+
+        domain_elements = ['enabled', 'description']
+        for args_key in kwargs:
+            if args_key in domain_elements:
+                domain_dict['domain'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(domain_dict)
+
+        response = requests.post(self.url + "/domains",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
+
+    def show_domain_details(self, domain_uuid):
+        """
+        Show details for a domain
+        :param domain_uuid: <uuid> UUID for the domain whose details are being requested
+        :return: response object returned by the show domain details request
+        """
+        response = requests.get(self.url + "/domains/{}".format(domain_uuid),
+                                headers=self.request_headers)
+        return response
+
+    def update_domain(self, domain_uuid, **kwargs):
+        """
+        Update a domain
+        :param domain_uuid: <uuid> UUID of the domain that is to be updated
+        :param kwargs:
+        :return: response object returned by the update domain request
+        """
+        domain_dict = {
+            "domain": {
+            }
+        }
+
+        domain_elements = ['enabled', 'description', 'name']
+        for args_key in kwargs:
+            if args_key in domain_elements:
+                domain_dict['domain'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(domain_dict)
+
+        response = requests.patch(self.url + "/domains/{}".format(domain_uuid),
+                                  headers=self.request_headers,
+                                  data=request_data)
+        return response
+
+    def delete_domain(self, domain_uuid):
+        """
+        Delete a domain
+        :param domain_uuid: <uuid> UUID of the domain that is to be deleted
+        :return: response object returned by the delete domain request
+        """
+        response = requests.delete(self.url + "/domains/{}".format(domain_uuid),
+                                   headers=self.request_headers)
+        return response
+
+    # Groups
+
+    def list_groups(self):
+        """
+        List groups
+        :return: response object returned by the list groups request
+        """
+        response = requests.get(self.url + "/groups",
+                                headers=self.request_headers)
+        return response
+
+    def create_group(self, name, description, domain_uuid):
+        """
+        Create a group
+        :param name: <str> Name for the group
+        :param description: <str> Description for the group
+        :param domain_uuid: <uuid> UUID of the domain of the group
+        :return: response object returned by the create group request
+        """
+        group_dict = {
+            "group": {
+                "name": name,
+                "description": description,
+                "domain_id": domain_uuid
+            }
+        }
+
+        request_data = json.dumps(group_dict)
+        response = requests.post(self.url + "/groups",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
+
+    def show_group_details(self, group_uuid):
+        """
+        Show group details
+        :param group_uuid: <uuid> UUID of the group whose details are being requested
+        :return: response object returned by the show group details request
+        """
+        response = requests.get(self.url + "/groups/{}".format(group_uuid),
+                                headers=self.request_headers)
+        return response
+
+    def update_group(self, group_uuid, **kwargs):
+        """
+        Update a group
+        :param group_uuid: <uuid> UUID of the group that is to be updated
+        :param kwargs:
+        :return: response object returned by the update group request
+        """
+        group_dict = {
+            "group": {
+
+            }
+        }
+
+        group_elements = ['name', 'description', 'domain_id']
+        for args_key in kwargs:
+            if args_key in group_elements:
+                group_dict["group"][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(group_dict)
+        response = requests.patch(self.url + "/groups/{}".format(group_uuid),
+                                  headers=self.request_headers,
+                                  data=request_data)
+        return response
+
+    def list_users_in_group(self, group_uuid):
+        """
+        List users in a group
+        :param group_uuid: <uuid> UUID of the group whose users are to be listed
+        :return: response object returned by the list users in group request
+        """
+        response = requests.get(self.url + "/groups/{}/users".format(group_uuid),
+                                headers=self.request_headers)
+        return response
+
+    def add_user_to_group(self, group_uuid, user_uuid):
+        """
+        Add a user to a group
+        :param group_uuid: <uuid> UUID of the group
+        :param user_uuid: <uuid> UUID of the user that is to be added to the group
+        :return: response object returned by the add user to group request
+        """
+        response = requests.put(self.url + "/groups/{}/users/{}".format(group_uuid, user_uuid),
+                                headers=self.request_headers)
+        return response
+
+    def user_belongs_to_group(self, group_uuid, user_uuid):
+        """
+        VAlidate if a user belongs to a group
+        :param group_uuid: <uuid> UUID of the group
+        :param user_uuid: <uuid> UUID of the user
+        :return: response object returned by the user belongs to group request
+        """
+        response = requests.head(self.url + "/groups/{}/users/{}".format(group_uuid, user_uuid),
+                                 headers=self.request_headers)
+        return response
+
+    def remove_user_from_group(self, group_uuid, user_uuid):
+        """
+        Remove user from the group
+        :param group_uuid: <uuid> UUID of the group
+        :param user_uuid: <uuid> UUID of the user that is to be removed from the group
+        :return: response object returned by the remove user from group request
+        """
+        response = requests.delete(self.url + "/groups/{}/users/{}".format(group_uuid, user_uuid),
+                                   headers=self.request_headers)
+        return response
+
+    def delete_group(self, group_uuid):
+        """
+        Delete a group
+        :param group_uuid: <uuid> UUID of the group that is to be deleted
+        :return: response object returned by the delete group request
+        """
+        response = requests.delete(self.url + "/groups/{}".format(group_uuid),
+                                   headers=self.request_headers)
+        return response
+
+    # Projects
+
+    def list_projects(self):
+        """
+        List projects
+        :return: response object returned by the list projects request
+        """
+        response = requests.get(self.url + "/projects",
+                                headers=self.request_headers)
+        return response
+
+    def create_project(self, name, **kwargs):
+        """
+        Create a project
+        :param name: <str> Name of the project that is to be created
+        :param kwargs:
+        :return: response object returned by the create project request
+        """
+        project_dict = {
+            "project": {
+                "name": name,
+            }
+        }
+
+        project_elements=['description', 'domain_id', 'enabled', 'is_domain', 'parent_id']
+
+        for args_key in kwargs:
+            if args_key in project_elements:
+                project_dict['project'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(project_dict)
+        response = requests.post(self.url + "/projects",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
+
+    def show_project_details(self, project_uuid):
+        """
+        Show project details
+        :param project_uuid: <uuid> UUID of the project whose details are being requested
+        :return: response object returned by the show project details request
+        """
+        response = requests.get(self.url + "/projects/{}".format(project_uuid),
+                                headers=self.request_headers)
+        return response
+
+    def update_project(self, project_uuid, **kwargs):
+        """
+        Update a project
+        :param project_uuid: <uuid> UUID of the project that is to be updated
+        :param kwargs:
+        :return: response object returned by the update project request
+        """
+        project_dict = {
+            "project": {
+            }
+        }
+
+        project_elements = ['description', 'domain_id', 'enabled', 'is_domain', 'name']
+
+        for args_key in kwargs:
+            if args_key in project_elements:
+                project_dict['project'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(project_dict)
+        response = requests.patch(self.url + "/projects/{}".format(project_uuid),
+                                  headers=self.request_headers,
+                                  data=request_data)
+        return response
+
+    def delete_project(self, project_uuid):
+        """
+        Delete a project
+        :param project_uuid: <uuid> UUID of the project that is to be deleted
+        :return: response object returned by the delete project request
+        """
+        response = requests.delete(self.url + "/projects/{}".format(project_uuid),
+                                   headers=self.request_headers)
+        return response
+
+    # Regions
+
+    def list_regions(self):
+        """
+        List regions
+        :return: response object returned by list regions request
+        """
+        response = requests.get(self.url + "/regions",
+                                headers=self.request_headers)
+        return response
+
+    def show_region_details(self, region_uuid):
+        """
+        Show region details
+        :param region_uuid: <uuid> UUID of the region whose details are being requested
+        :return: response object returned by show region details request
+        """
+        response = requests.get(self.url + "/regions/{}".format(region_uuid),
+                                headers=self.request_headers)
+        return response
+
+    def create_region(self, **kwargs):
+        """
+        Create a region
+        :param kwargs:
+        :return: response object returned by the create region request
+        """
+        region_dict = {
+            "region": {
+            }
+        }
+
+        region_elements = ["description", "id", "parent_region_id"]
+
+        for args_key in kwargs:
+            if args_key in region_elements:
+                region_dict['region'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(region_dict)
+        response = requests.post(self.url + "/regions",
+                                 headers=self.request_headers,
+                                 data=request_data)
+        return response
+
+    def update_region(self, region_id, **kwargs):
+        """
+        Update a region
+        :param region_id: <str> Region ID
+        :param kwargs:
+        :return: response object returned by the update region request
+        """
+        region_dict = {
+            "region": {
+            }
+        }
+
+        region_elements = ["description", "parent_region_id"]
+
+        for args_key in kwargs:
+            if args_key in region_elements:
+                region_dict['region'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(region_dict)
+        response = requests.patch(self.url + "/regions/{}".format(region_id),
+                                  headers=self.request_headers,
+                                  data=request_data)
+        return response
+
+    def delete_region(self, region_uuid):
+        """
+        Delete a region
+        :param region_uuid: <uuid> UUID of the region that is to be deleted
+        :return: response object returned by the delete region request
+        """
+        response = requests.delete(self.url + "/regions/{}".format(region_uuid),
+                                   headers=self.request_headers)
+        return response
+
+    # Roles
+
+    def list_roles(self):
+        """
+        List roles
+        :return: response object returned by the list roles request
+        """
+        response = requests.get(self.url + "/roles",
+                                headers=self.request_headers)
+        return response
+
+    # TODO
+    def create_role(self):
+        pass
+
+    # TODO
+    def show_role_details(self):
+        pass
+
+    # TODO
+    def update_role(self):
+        pass
+
+    def delete_role(self, role_uuid):
+        """
+        Delete a role
+        :param role_uuid: <uuid> UUID of the role that is to be deleted
+        :return: response object returned by the delete role request
+        """
+        response = requests.delete(self.url + "/roles/{}".format(role_uuid),
+                                   headers=self.request_headers)
+        return response
+
+    # TODO
+    def group_domain_list_assignments(self):
+        pass
+
+    # TODO
+    def group_domain_assign_role(self):
+        pass
+
+    # TODO
+    def group_domain_assignment_check(self):
+        pass
+
+    # TODO
+    def group_domain_unassign_role(self):
+        pass
+
+    # TODO
+    def user_domain_list_assignments(self):
+        pass
+
+    # TODO
+    def user_domain_assign_role(self):
+        pass
+
+    # TODO
+    def user_domain_assignment_check(self):
+        pass
+
+    # TODO
+    def user_domain_unassign_role(self):
+        pass
+
+    # TODO
+    def group_project_list_assignments(self):
+        pass
+
+    # TODO
+    def group_project_assign_role(self):
+        pass
+
+    # TODO
+    def group_project_assignment_check(self):
+        pass
+
+    # TODO
+    def group_project_unassign_role(self):
+        pass
+
+    # TODO
+    def user_project_list_assignments(self):
+        pass
+
+    # TODO
+    def user_project_assign_role(self):
+        pass
+
+    # TODO
+    def user_project_assignment_check(self):
+        pass
+
+    # TODO
+    def user_project_unassign_role(self):
+        pass
+
+    # TODO - Add implied(inference) role methods
+
+    # TODO
+    def list_role_assignemnts(self):
+        pass
+
+    # Users
+
+    def list_users(self):
+        """
+        List users
+        :return: response object returned by the list users request
+        """
+        response = requests.get(self.url + "/users",
+                                headers=self.request_headers)
+        return response
+
+    def create_user(self, name, password, **kwargs):
+        user_dict = {
+            "user": {
+                "name": name,
+                "password": password
+            }
+        }
+
+        user_elements = ['default_project_id', 'domain_id', 'enabled']
+        for args_key in kwargs:
+            if args_key in user_elements:
+                user_dict['user'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(user_dict)
+        response = requests.post(self.url + "users",
+                                 headers=self.request_headers,
+                                 data=request_data)
+
+        return response
+
+    def show_user_details(self, user_id):
+        """
+        Show user details
+        :param user_id: <uuid> UUID of the user whose details are being requested
+        :return: response object returned by the show user details request
+        """
+        response = requests.get(self.url + "/users/{}".format(user_id),
+                                headers=self.request_headers)
+        return response
+
+    def update_user(self, user_id, **kwargs):
+        """
+        Update a user
+        :param user_id: <uuid> UUID of the user
+        :param kwargs:
+        :return: response object returned by the update user request
+        """
+        user_dict = {
+            "user": {
+            }
+        }
+
+        user_elements = ['default_project_id', 'domain_id', 'enabled', 'name', 'password']
+        for args_key in kwargs:
+            if args_key in user_elements:
+                user_dict['user'][args_key] = kwargs[args_key]
+
+        request_data = json.dumps(user_dict)
+        response = requests.patch(self.url + "/users/{}".format(user_id),
+                                  headers=self.request_headers,
+                                  data=request_data)
+        return response
+
+    def delete_user(self, user_id):
+        """
+        Delete a user
+        :param user_id: <uuid> UUID of the user that is to be deleted
+        :return: response object returned by the delete user request
+        """
+        response = requests.delete(self.url + "/users/{}".format(user_id),
+                                   headers=self.request_headers)
+        return response
+
+    def user_groups_list(self, user_id):
+        """
+        List groups to which the user belongs
+        :param user_id: <uuid> UUID of the user
+        :return: response object returned by the user groups list request
+        """
+        response = requests.get(self.url + "/users/{}/groups".format(user_id),
+                                headers=self.request_headers)
+        return response
+
+    def user_projects_list(self, user_id):
+        """
+        List projects for a user
+        :param user_id: <uuid> UUID of the user
+        :return: response object returned by the user projects list request
+        """
+        response = requests.get(self.url + "/users/{}/projects".format(user_id),
+                                headers=self.request_headers)
+        return response
+
+    def change_user_password(self, user_id, original_password, new_password):
+        """
+        Change the password for a user
+        :param user_id: <uuid> UUID of the user whose password is to be changed
+        :param original_password: <str> the original password for the user
+        :param new_password: <str> new password for the user
+        :return: response object returned by the change user password request
+        """
+        user_dict = {
+            "user": {
+                "password": new_password,
+                "original_password": original_password
+            }}
+        request_data = json.dumps(user_dict)
+        response = requests.post(self.url + "/users/{}/password".format(user_id),
+                                 headers=self.request_headers,
+                                 data=request_data)
         return response
 
 
