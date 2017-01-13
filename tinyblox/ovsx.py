@@ -42,6 +42,62 @@ class Ovs:
         return self.conn.execute('ovs-vsctl list-br')
 
     @_rconn_handle
+    def list_ports_br(self, br):
+        """
+        Method to list all ports on the specified bridge
+        :param br: <str> bridge name
+        :return: output of the command list-ports
+        """
+        return self.conn.execute('ovs-vsctl list-ports {}'.format(br))
+
+    @_rconn_handle
+    def port_to_br(self, port):
+        """
+        Method to fetch the name of the bridge that contains the specified port
+        :param port: <str> port name
+        :return: output of the port-to-br command
+        """
+        return self.conn.execute("ovs-vsctl port-to-br {}".format(port))
+
+    @_rconn_handle
+    def add_port(self, br, port):
+        """
+        Method to add specified port to the specified bridge
+        :param br: <str> bridge name
+        :param port: <str> port name
+        :return: output of the add-port command
+        """
+        return self.conn.execute("ovs-vsctl add-port {} {}".format(br, port), sudo=True)
+
+    @_rconn_handle
+    def del_port(self, br, port):
+        """
+        Method to delete the specified port from the specidied bridge
+        :param br: <str> bridge name
+        :param port: <str> port name
+        :return: output of the del-port command
+        """
+        return self.conn.execute("ovs-vsctl del-port {} {}".format(br, port), sudo=True)
+
+    @_rconn_handle
+    def list_ifaces_br(self, br):
+        """
+        Method to list all interfaces on a bridge
+        :param br: <str> bridge name
+        :return: output of the list-ifaces command
+        """
+        self.conn.execute("ovs-vsctl list-ifaces {}".format(br))
+
+    @_rconn_handle
+    def iface_to_br(self, iface):
+        """
+        Method to list fetch the name of the bridge that contains the specified iface
+        :param iface: <str> interface name
+        :return: output of iface-to-br command
+        """
+        self.conn.execute("ovs-vsctl iface-to-br {}".format(iface))
+
+    @_rconn_handle
     def get_controller(self, br):
         """
         Method to get the current controller of a bridge
@@ -51,14 +107,20 @@ class Ovs:
         return self.conn.execute('ovs-vsctl get-controller {}'.format(br), sudo=True)
 
     @_rconn_handle
-    def set_controller(self, br, ctrl_ip):
+    def set_controller(self, br, ctrl_ip, protocol="tcp", port=6633):
         """
         Method to set a controller to a bridge
         :param br: <str> bridge name
         :param ctrl_ip: <str> IP address of the controller
+        :param protocol: <str> protocol tcp/ssl. default = tcp
+        :param port: <int> controller port to connect to. default = 6633
         :return output of the set-controller command
         """
-        return self.conn.execute('ovs-vsctl set-controller {} tcp:{}:6633'.format(br, ctrl_ip), sudo=True)
+        if protocol == "tcp" or protocol == "ssl":
+            return self.conn.execute('ovs-vsctl set-controller {} {}:{}:{}'.format(br, protocol, ctrl_ip, port),
+                                     sudo=True)
+        else:
+            return "Invalid value. Please specify 'ssl' or 'tcp' as values for protocol."
 
     @_rconn_handle
     def del_controller(self, br):
@@ -105,6 +167,37 @@ class Ovs:
         :return output of the del bridge command
         """
         return self.conn.execute('ovs-vsctl del-br {}'.format(br), sudo=True)
+
+    @_rconn_handle
+    def get_fail_mode(self, br):
+        """
+        Method to fetch the configured failure mode
+        :param br: <str> bridge name
+        :return: output of get-fail-mode command
+        """
+        return self.conn.execute("ovs-vsctl get-fail-mode {}".format(br))
+
+    @_rconn_handle
+    def del_fail_mode(self, br):
+        """
+        Method to delete the configured failure mode on the bridge
+        :param br: <str> bridge name
+        :return: output of the del-fail-mode command
+        """
+        return self.conn.execute("ovs-vsctl del-fail-mode {}".format(br), sudo=True)
+
+    @_rconn_handle
+    def set_fail_mode(self, br, fail_mode):
+        """
+        Method to set the configured failure mode on a bridge
+        :param br: <str> bridge name
+        :param fail_mode: <str> fail mode. 'standalone' or 'secure'
+        :return:
+        """
+        if fail_mode == 'standalone' or fail_mode == 'secure':
+            return self.conn.execute('ovs-vsctl set-fail-mode {} {}'.format(br, fail_mode), sudo=True)
+        else:
+            return "Invalid value for fail_mode. please specify 'standalone' or 'secure'"
 
     # OVS-OFCTL Commands
     @_rconn_handle
