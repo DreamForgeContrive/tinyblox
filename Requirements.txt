@@ -6,7 +6,7 @@ enum34==1.1.6
 futures==3.0.5
 idna==2.1
 ipaddress==1.0.17
-paramiko==1.17.0
+paramiko==2.0.9
 py==1.4.31
 pyasn1==0.1.9
 pycparser==2.16
