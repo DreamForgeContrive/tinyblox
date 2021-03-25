@@ -12,6 +12,6 @@ pyasn1==0.1.9
 pycparser==2.16
 pycrypto==2.6.1
 pytest==3.0.3
-PyYAML==5.1
+PyYAML==5.4
 requests==2.11.1
 six==1.10.0
