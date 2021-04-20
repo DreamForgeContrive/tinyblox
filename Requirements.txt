@@ -7,7 +7,7 @@ futures==3.0.5
 idna==2.1
 ipaddress==1.0.17
 paramiko==2.0.9
-py==1.4.31
+py==1.10.0
 pyasn1==0.1.9
 pycparser==2.16
 pycrypto==2.6.1
