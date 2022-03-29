@@ -2,7 +2,7 @@ from setuptools import setup
 
 requires = [
     'cassandra-driver',
-    'paramiko==2.0.9',
+    'paramiko==2.10.1',
     'requests',
     'pyyaml'
 ]
